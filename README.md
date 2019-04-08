@@ -27,7 +27,7 @@ This project is licensed under the CeCILL License - see the [Licence_CeCILL_V2.1
 
 ## Acknowledgments
 
-* LTM, Laboratoire des Technologies de la microélectronique. [ltmlab.fr](ltmlab.fr)
+* LTM, Laboratoire des Technologies de la microélectronique. [ltmlab.fr](http://ltmlab.fr/)
 * Université Grenoble Alpes
 * Centre National de la Recherche Scientifique
 * _This work was partly supported by the french RENATECH network_
