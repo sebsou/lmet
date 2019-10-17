@@ -51,7 +51,7 @@ def nklib(g, wl, mat, ns, ks) :
     for n, k in itertools.product(ns, ks):
 
         mat.nk = n + 1.j*k
-        g.context["Hv"] = np.array([wl])
+        g.context["𝜆"] = np.array([wl])
         lib.append(g.signature().data[['Is', 'Ic']].values[0])
 
     return np.array(lib)
@@ -97,7 +97,7 @@ def nklib_newctx(g, wl, angles, mat, ns, ks) :
 
     for n, k in itertools.product(ns, ks):
 
-        ct = {"Hv" : [wl],
+        ct = {"𝜆" : [wl],
               'angle' : angles}
 
         mat.__init__("constant",  n + 1.j*k)
@@ -126,7 +126,7 @@ def nklibset(g, wls, mat, ns, ks, progress_bar = lambda x : None) :
 
 def nklibset_newctx(g, ctx, mat, ns, ks, progress_bar = lambda x : None) :
 
-    groups = ctx.groupby(['Hv']).groups
+    groups = ctx.groupby(['𝜆']).groups
     wls = np.sort(groups.keys())
 
     libset = [] # ensemble de nklib indéxé par wl
@@ -189,7 +189,7 @@ def determine_library(sig, wls, keys, libset, progress_bar = lambda x : None, nn
         nklib = libset[i] #(g, wl, mat, ns, ks)
         nbrs = NearestNeighbors(n_neighbors=nn, algorithm='ball_tree').fit(nklib)
 
-        refsig = np.hstack(sig.data.loc[sig.data['Hv'] == wl][['Is', 'Ic']].values)
+        refsig = np.hstack(sig.data.loc[sig.data['𝜆'] == wl][['Is', 'Ic']].values)
 
         distances, indices = nbrs.kneighbors(refsig) #sig.data[['Is', 'Ic']].values[i])
 
@@ -198,4 +198,4 @@ def determine_library(sig, wls, keys, libset, progress_bar = lambda x : None, nn
 
         progress_bar(i+1)
 
-    return  pd.DataFrame(pts, columns = ['Hv', 'n', 'k'])
+    return  pd.DataFrame(pts, columns = ['𝜆', 'n', 'k'])

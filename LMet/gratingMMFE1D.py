@@ -137,8 +137,8 @@ def addlayer(i, e, cd, air, mat) :
         # if isinstance(context, dict): # traditionnel
 
         #     import itertools
-        #     ctx = pd.DataFrame(list(itertools.product(context['angle'], context['Hv'], [context['M']])))
-        #     ctx.columns = ['angle', 'Hv', 'M']
+        #     ctx = pd.DataFrame(list(itertools.product(context['angle'], context['𝜆'], [context['M']])))
+        #     ctx.columns = ['angle', '𝜆', 'M']
 
 
         rp_rs = rprs(self.ec,

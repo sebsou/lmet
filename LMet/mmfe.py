@@ -298,17 +298,17 @@ def efficacite_ref_1D(rp, S, M, nmax) :
 
 
 
-def rprs(ec, eta, nl, pitch, context) : #angle, wl, M) :
+def rprs(ec, eta, nl, pitch, context) : #angle, 𝜆, M) :
     """
     angle : de taille quelconque
-    wl : idem
-    nl : tableau (iwl) de tableau de complexes (3d)
+    𝜆 : idem
+    nl : tableau (i𝜆) de tableau de complexes (3d)
          ou tableau (2D) de materials
     """
 
 
-    def mat2cx(nl, wl):
-        def ope (f) : return f(wl)
+    def mat2cx(nl, 𝜆):
+        def ope (f) : return f(𝜆)
         ope = np.vectorize(ope)
         return ope(nl)
 
@@ -316,7 +316,7 @@ def rprs(ec, eta, nl, pitch, context) : #angle, wl, M) :
     """
     if ndim == 2 : # utilisation de nulam_mat
         nulam = []
-        for iL,lambda0 in enumerate(wl):
+        for iL,lambda0 in enumerate(𝜆):
             nulam.append( mat2cx(nl, lambda0))
     else :
         nulam = nl
@@ -329,14 +329,14 @@ def rprs(ec, eta, nl, pitch, context) : #angle, wl, M) :
 
     #d = pd.DataFrame()
 
-    def singlerprs(ang, wl, M, ec, eta, nulam, pitch) :
+    def singlerprs(ang, 𝜆, M, ec, eta, nulam, pitch) :
 
         theta = ang
-        lambda0 = wl
+        lambda0 = 𝜆
 
         sinteta = sin(theta)
 
-        amp_te =0j*wl
+        amp_te =0j*𝜆
         amp_tm =array(amp_te)
 
         nmax = 2*M+1 # a verifier (seb : OK)
@@ -389,8 +389,8 @@ def rprs(ec, eta, nl, pitch, context) : #angle, wl, M) :
         return (rprs[0], rp_polar[0], rs_polar[0], rpors[0]) # !!!!modif JH
 
         """
-        d = d.append(pd.DataFrame({'angle' : np.repeat(theta,len(wl)),
-                                   'Hv' : wl,
+        d = d.append(pd.DataFrame({'angle' : np.repeat(theta,len(𝜆)),
+                                   '𝜆' : 𝜆,
                                   'rp' : np.real(rprs),
                                   'rs' : np.imag(rprs)}))
         """
@@ -405,23 +405,23 @@ def rprs(ec, eta, nl, pitch, context) : #angle, wl, M) :
     if isinstance(context, dict): # traditionnel
 
         import itertools
-        ctx = pd.DataFrame(list(itertools.product(context['angle'], context['Hv'], [context['M']])))
-        ctx.columns = ['angle', 'Hv', 'M']
+        ctx = pd.DataFrame(list(itertools.product(context['angle'], context['𝜆'], [context['M']])))
+        ctx.columns = ['angle', '𝜆', 'M']
 
 
     for idx, row in ctx.iterrows():
-        wl = row['Hv']
+        𝜆 = row['𝜆']
         ang = row['angle']
         M = int(row['M'])
 
-        nulam = mat2cx(nl, wl)
-        (rprs,rp_polar,rs_polar,rpors)  = singlerprs(ang, wl, M, ec, eta, nulam, pitch) # !!!!modif JH
+        nulam = mat2cx(nl, 𝜆)
+        (rprs,rp_polar,rs_polar,rpors)  = singlerprs(ang, 𝜆, M, ec, eta, nulam, pitch) # !!!!modif JH
 
-       # d.append ([ang, wl, M, np.real(rprs), np.imag(rprs), np.real(rprs)/np.imag(rprs) ] )
-        d.append ([ang, wl, M, np.real(rprs), np.imag(rprs),rp_polar,rs_polar, rpors ] ) # !!!!modif JH
+       # d.append ([ang, 𝜆, M, np.real(rprs), np.imag(rprs), np.real(rprs)/np.imag(rprs) ] )
+        d.append ([ang, 𝜆, M, np.real(rprs), np.imag(rprs),rp_polar,rs_polar, rpors ] ) # !!!!modif JH
 
     d = np.array(d)
-    return pd.DataFrame(d, columns = ["angle","Hv", "M", "rp", "rs", "rp_polar", "rs_polar", "rpors"]) # !!!!modif JH
+    return pd.DataFrame(d, columns = ["angle","𝜆", "M", "rp", "rs", "rp_polar", "rs_polar", "rpors"]) # !!!!modif JH
 
 
 import sys

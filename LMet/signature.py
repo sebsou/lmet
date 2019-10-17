@@ -62,10 +62,10 @@ class signature():
             self.ellipso = ellipso
 
         """
-    def __call__(self, wl) :
+    def __call__(self, 𝜆) :
         if  not hasattr(self, "f1") : self.f1 = interp1d(self.data[:, 0], self.data[:, 1])
         if  not hasattr(self, "f2") : self.f2 = interp1d(self.data[:, 0], self.data[:, 2])
-        return  self.f1(wl), self.f2(wl)
+        return  self.f1(𝜆), self.f2(𝜆)
 """
     def distance(self, sig, columns, *args, **kwargs):
 
@@ -79,9 +79,43 @@ class signature():
         elif os.path.splitext(fname)[1] == '.dat':
             self.openWoolam(fname)
 
-    def openJobinYvon(self, fname):
+    def openJobinYvon(self, f):
 
-        with open(fname, "rb") as search:
+        n = 0  
+        datablock = 0
+      
+
+        with open(f,  encoding = "ISO-8859-1") as search:
+      
+            for line in search:
+                line = line.rstrip()  # remove '\n' at end of line
+                if line == "## ELLIPSOMETRIC CONFIGURATION:":
+                    self.modulator = float(next(search).split(' ')[0]) ;  n += 1
+                    self.analyser = float(next(search).split(' ')[0]) ;  n += 1
+                if line == "# INCIDENCE ANGLE:" :
+                    self.incidence = float(next(search).split(' ')[0]) ;  n += 1
+                if line == '# DATA:': 
+                    datablock = n + 1
+                    break
+                if line == '# NUMBER OF POINTS:' : 
+                    number_of_points = int(next(search).split(' ')[0]) ;  n += 1
+                
+                n += 1
+        
+        
+        self.data = pd.read_csv(f, header=datablock,
+                                delim_whitespace=True,
+                                skip_blank_lines=False,
+                                encoding = "ISO-8859-1",
+                                nrows = number_of_points)
+        
+        self.ellipso = 'JobinYvon'
+
+
+        """
+        with open(fname, encoding = "ISO-8859-1") as search:
+
+
             for i, line in enumerate(search):
                 line = line.decode(errors='ignore').rstrip()  # remove '\n' at end of line
                 if line == "## ELLIPSOMETRIC CONFIGURATION:":
@@ -104,8 +138,10 @@ class signature():
         self.data = pd.read_csv(fname, header=toskip+1,
                                 delim_whitespace=True,
                                 skip_blank_lines=False,
+                                encoding = "ISO-8859-1",
                                 nrows = npoints)
         self.ellipso = 'JobinYvon'
+        """
 
     def openNanometrix(self, fname): # Nanometrix Atlas XP+
                 # TODO : analyser
@@ -114,7 +150,7 @@ class signature():
                                         delim_whitespace=True,
                                         skip_blank_lines=False)
 
-                self.data.columns = ['Hv', 'Is', 'Ic']
+                self.data.columns = ['𝜆', 'Is', 'Ic']
 
                 self.ellipso = 'Nivea'
 
@@ -134,7 +170,7 @@ class signature():
                                 delim_whitespace=True,
                                 skip_blank_lines=False)
 
-        self.data.columns = ['Hv', 'angle', 'Psi',
+        self.data.columns = ['𝜆', 'angle', 'Psi',
                              'Delta', 'ErrPsi', 'ErrDelta']
 
         self.data[['angle', 'Psi', 'Delta', 'ErrPsi', 'ErrDelta']] = np.radians(
@@ -150,14 +186,19 @@ class signature():
         if ('Is' not in self.data.columns) or ('Ic' not in self.data.columns):
             self.computesignals()
 
-        return self.data[['Hv', 'Is', 'Ic']]
+        return self.data[['𝜆', 'Is', 'Ic']]
 
     def eV(self):
         e = physical_constants['elementary charge'][0]
-        self.data['eV'] = h * c / e / self.data['Hv'] / 10**(-9)
+        self.data['eV'] = h * c / e / self.data['𝜆'] / 10**(-9)
+
+    def 𝜆(self):
+        e = physical_constants['elementary charge'][0]
+        self.data['𝜆'] = h * c / e / self.data['eV'] / 10**(-9)
+
 
     def cmmo(self):
-        self.data['cmmo'] = 1 / (self.data['Hv'] * 10**(-7))
+        self.data['cmmo'] = 1 / (self.data['𝜆'] * 10**(-7))
 
     def compute_isic(self):
 
@@ -251,7 +292,7 @@ class signature():
     @isic.deleter
     def isic(self): del self._isic
 
-    def tanpsicosdelta(self, wl) :
+    def tanpsicosdelta(self, 𝜆) :
 
         l=self._rprs[0]
         tanpsi = abs(self._rprs[1])
@@ -260,7 +301,7 @@ class signature():
         f1 = interp1d(l, _isic[:, 1])
         f2 = interp1d(l, _isic[:, 2])
 
-        return ( f1(wl), f2(wl) )
+        return ( f1(𝜆), f2(𝜆) )
 
     @property
     def tanpsicosdelta(self):

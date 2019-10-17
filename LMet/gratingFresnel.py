@@ -112,14 +112,14 @@ class gratingFresnel(grating) :
         d = []
         
         for idx, row in context.iterrows():
-            LAMBDA = row['Hv']
+            LAMBDA = row['𝜆']
             PHI0 = row['angle']
             rprs = singlerprs(e, mat, PHI0, LAMBDA) 
             d.append ([PHI0, LAMBDA, np.real(rprs), np.imag(rprs)] )
          
                   
         d = np.array(d)
-        return pd.DataFrame(d, columns = ["angle","Hv", "rp", "rs"])
+        return pd.DataFrame(d, columns = ["angle","𝜆", "rp", "rs"])
             
     def compute(self, context) :
         
@@ -128,8 +128,8 @@ class gratingFresnel(grating) :
         if isinstance(context, dict) : # traditionnel
             
             import itertools
-            ctx = pd.DataFrame(list(itertools.product(context['angle'], context['Hv'])))
-            ctx.columns = ['angle', 'Hv']
+            ctx = pd.DataFrame(list(itertools.product(context['angle'], context['𝜆'])))
+            ctx.columns = ['angle', '𝜆']
 
         rp_rs = self.rprs(self.ec, self.mat, ctx)
                      
