@@ -49,7 +49,7 @@ from scipy.interpolate import interp1d
 from scipy.constants import c, h, physical_constants
 import numpy as np
 from pylab import *
-
+from  os.path import splitext
 
 class material(object) :
 
@@ -99,9 +99,57 @@ class material(object) :
 
     # Modèle file
 
+
+    def openJobinYvon(self, p) :
+        
+        n = 0  
+        datablock = 0
+        three_points = False # Sometimes, JY puts EVs in a first column, sometimes not.
+        
+        with open(p,  encoding = "ISO-8859-1") as search:
+      
+            for line in search:
+                line = line.rstrip()  # remove '\n' at end of line
+                if line == '# DATA:': datablock = n + 2
+                if line == '# FIRST POINT:': 
+                    firstpoint = float(next(search).split(' ')[0]) ;  n += 1
+                if line == '# LAST POINT:' :  
+                    lastpoint = float(next(search).split(' ')[0]) ;  n += 1
+                #if line == '# INCREMENT:': 
+                #    increment = float(next(search).split(' ')[0]) ;  n += 1
+                if line == '# NUMBER OF POINTS:' : 
+                    number_of_points = int(next(search).split(' ')[0]) ;  n += 1
+                if line == 'eV n k' : three_points = True
+                n += 1
+        
+        if three_points :
+            data = genfromtxt(p, dtype=float, skip_header=datablock, encoding = "ISO-8859-1")
+        else :
+            evs = np.linspace(firstpoint, lastpoint, number_of_points)
+            data = np.zeros((len(evs), 3))
+            data[:, 0] = evs
+            data[:, 1:]  = genfromtxt(p, dtype=float, skip_header=datablock, encoding = "ISO-8859-1")
+        
+        return data
+
+
+
+
     def file_init(self, p):
 
-        data  = genfromtxt(p, dtype=float) #, delimiter='\t')
+
+        filename, file_extension = splitext(p)
+
+        beginning = 0 # Default
+
+        if file_extension == '.ref' : # format Jobin-Yvon
+            data = self.openJobinYvon(p)
+        elif file_extension == '.nkf' : #
+            data  = genfromtxt(p, dtype=float, skip_header=2, encoding = "ISO-8859-1")
+        else :
+            data  = genfromtxt(p, dtype=float, encoding = "ISO-8859-1")
+
+        #data  = genfromtxt(p, dtype=float) #, delimiter='\t')
 
         wl = data[:, 0]
 
@@ -121,6 +169,9 @@ class material(object) :
         self.wlmax = max(wl)
         self.n = interp1d(wl, n)
         self.k = interp1d(wl, k)
+
+
+
 
     def file_call(self, wl):
         return self.n(wl)- 1.0j*self.k(wl)
